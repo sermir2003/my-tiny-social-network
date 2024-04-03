@@ -1,0 +1,29 @@
+@startuml erd-ugc
+
+skinparam linetype ortho
+
+title
+    Диаграмма сущностей БД сервиса UGC
+end title
+
+entity "Пользователь" as user {
+    user_id : number <<unique>>
+    --
+    ...
+}
+
+entity "Пост или комментарий" as ugc {
+    ugc_id : number <<unique>>
+    --
+    author_id : <<FK>>
+    parent_id : <<FK, noneable>>
+    content : text
+    timestamp : timestamp
+    is_deleted : boolean
+    is_edited : boolean
+}
+
+user ||--o{ ugc
+ugc |o--o{ ugc
+
+@enduml

@@ -1,0 +1,32 @@
+@startuml erd-stats
+
+skinparam linetype ortho
+
+title
+    Диаграмма сущностей БД сервиса статистик
+end title
+
+entity "Пользователь" as user {
+    user_id : number <<unique>>
+    --
+    ...
+}
+
+entity "Пост или комментарий" as ugc {
+    ugc_id : number <<unique>>
+    --
+    ...
+}
+
+entity "Реакция" as reaction {
+    act_id : number <<unique>>
+    --
+    user_id : number <<FK>>
+    ugc_id : number <<FK>>
+    reaction : uint8 <<encoded>>
+}
+
+user ||--o{ reaction
+ugc ||--o{ reaction
+
+@enduml

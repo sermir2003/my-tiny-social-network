@@ -1,0 +1,22 @@
+@startuml c4d-systems
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+skinparam wrapWidth 250
+skinparam wrapMessageWidth 400
+LAYOUT_WITH_LEGEND()
+
+title
+    C4 диаграмма систем
+end title
+
+System(main, "Главный сервис")
+System(stats, "Сервис статистик")
+System(heavy_ugc, "Сервис UGC")
+
+Person(user, "Пользователь")
+
+Rel(user, main, "Всё API пользователя")
+Rel(main, stats, "Информирование об активностях")
+Rel(main, heavy_ugc, "Работа с UGC")
+
+@enduml

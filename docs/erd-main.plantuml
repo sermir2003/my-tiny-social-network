@@ -1,0 +1,18 @@
+@startuml erd-main
+
+skinparam linetype ortho
+
+entity "Живой человек" as human {}
+
+entity "Пользователь" as user {
+    user_id : number <<unique>>
+    --
+    login : string <<unique>>
+    emain : string
+    salty_password_hash : string
+    salt : string
+}
+
+human ||--o{ user
+
+@enduml
