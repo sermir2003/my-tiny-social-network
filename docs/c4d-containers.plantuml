@@ -10,8 +10,8 @@ end title
 
 System_Boundary(main, "Главный сервис") {
     Container(main_core, "Коммуникация с пользователем", "Golang")
-    ContainerDb(users_identity, "БД user identity", "Postgres", "Id, логин, почта, пароль,...")
-    Rel(main_core, users_identity, "регистрация, аутентификация", "SQL-запросы")
+    ContainerDb(users_db, "БД user identity", "Postgres", "Id, логин, почта, пароль,...")
+    Rel(main_core, users_db, "регистрация, аутентификация", "SQL-запросы")
 }
 
 System_Boundary(stats, "Сервис статистик") {

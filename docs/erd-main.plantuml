@@ -4,15 +4,25 @@ skinparam linetype ortho
 
 entity "Живой человек" as human {}
 
-entity "Пользователь" as user {
-    user_id : number <<unique>>
+entity "Кредитка" as cred {
+    id : serial
     --
-    login : string <<unique>>
-    emain : string
-    salty_password_hash : string
-    salt : string
+    login : varchar(255), unique
+    salt : char(32)
+    salted_password_hash : text
 }
 
-human ||--o{ user
+entity "Данные" as data {
+    id : integer, FK cred (id)
+    --
+    name : varchar(255)
+    surname : varchar(255)
+    birthdate : date
+    email : varchar(255)
+    phone : varchar(32)
+}
+
+human ||--o{ cred
+cred ||--|| data
 
 @enduml
