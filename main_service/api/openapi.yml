@@ -1,0 +1,141 @@
+openapi: 3.0.0
+info:
+  title: Social Network User API
+  description: MyTinySocialNetwork User to Main server OpenAPI specification
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Dev server
+paths:
+  /user/sign-up:
+    post:
+      summary: Registers new user with provided data
+      operationId: register
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+      responses:
+        '200':
+          $ref: '#/components/responses/Token'
+        '400':
+          $ref: '#/components/responses/InvalidCredentialsError'
+          
+  /user/sign-in:
+    post:
+      summary: Login via password
+      operationId: login
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+      responses:
+        '200':
+          $ref: '#/components/responses/Token'
+        '400':
+          $ref: '#/components/responses/InvalidCredentialsError'
+          
+  /user/update-personal:
+    put:
+      summary: Change personal data like name, surname, etc
+      operationId: update_personal
+      tags:
+        - personal
+      security:
+        - TokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonalData'
+      responses:
+        '200':
+          description: Success
+        '400':
+          $ref: '#/components/responses/InvalidPersonalDataError'
+        '401':
+          $ref: '#/components/responses/TokenUnauthorizedError'
+
+
+components:
+  schemas:
+    Credentials:
+      description: Login and password
+      type: object
+      properties:
+        login:
+          type: string
+          pattern: '^[\w\-]{1,255}$'
+          example: super-nezuko0112
+        password:
+          type: string
+          pattern: '^[\w\-@$!%*#?&]{6,255}$'
+          example: secret#112
+      required:
+        - login
+        - password
+    
+    PersonalData:
+      description: Name, surname, birthdate, etc
+      type: object
+      properties:
+        name:
+          type: string
+          pattern: '^[A-Z][a-z]{,254}$'
+          example: Nezuko
+        surname:
+          type: string
+          pattern: '^[A-Z][a-z]{,254}$'
+          example: Kamado
+        birthdate:
+          type: string
+          format: date
+          example: 2004-12-28
+        email:
+          type: string
+          pattern: '^\w|\-+@\w|\-+\.\w|\-+$'
+          maxLength: 255
+          example: super-nezuko@DemonSlayer.anime
+        phone:
+          type: string
+          pattern: '^\+\d+$'
+          maxLength: 32
+          example: "+2556517263803249791110286440017"
+      minProperties: 1
+
+
+  responses:
+    Token:
+      description: Token for futher authentification
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+    
+    InvalidCredentialsError:
+      description: Credentials are missing or not valid or login has already been taken or wrong login or password
+    
+    InvalidPersonalDataError:
+      description: Personal data is missing or not valid
+    
+    TokenUnauthorizedError:
+      description: API key is missing or invalid
+
+
+  securitySchemes:
+    TokenAuth:
+      name: X-API-Key
+      type: apiKey
+      in: header
