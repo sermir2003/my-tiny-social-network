@@ -5,21 +5,21 @@ skinparam linetype ortho
 entity "Живой человек" as human {}
 
 entity "Кредитка" as cred {
-    id : serial
+    id : uuid NOT NULL
     --
-    login : varchar(255), unique
-    salt : char(32)
-    salted_password_hash : text
+    login : varchar(255) UNIQUE NOT NULL
+    salt bytea NOT NULL
+    password text NOT NULL
 }
 
 entity "Данные" as data {
-    id : integer, FK cred (id)
+    id : uuid NOT NULL
     --
-    name : varchar(255)
-    surname : varchar(255)
-    birthdate : date
-    email : varchar(255)
-    phone : varchar(32)
+    name : varchar(255) NOT NULL
+    surname : varchar(255) NOT NULL
+    birthdate : date NOT NULL
+    email : varchar(255) NOT NULL
+    phone : varchar(32) NOT NULL
 }
 
 human ||--o{ cred
