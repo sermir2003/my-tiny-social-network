@@ -1,0 +1,22 @@
+@startuml erd-main
+
+skinparam linetype ortho
+
+entity "Живой человек" as humans {}
+
+entity "Пользователь" as users {
+    * id : serial
+    --
+    * login : varchar(255) <<unique>>
+    * salt : bytea
+    * password : text
+    name : varchar(255)
+    surname : varchar(255)
+    birthdate : date
+    email : varchar(255)
+    phone : varchar(32)
+}
+
+humans ||--o{ users
+
+@enduml

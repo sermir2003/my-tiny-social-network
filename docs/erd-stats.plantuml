@@ -1,0 +1,40 @@
+@startuml erd-stats
+
+skinparam linetype ortho
+
+title
+    Диаграмма сущностей БД сервиса статистик
+end title
+
+entity "Пользователь" as users {
+    user_id : integer <<unique>>
+    --
+    ...
+}
+
+entity "Пост" as posts {
+    * post_id : serial
+    --
+    ...
+}
+
+entity "Комментарий" as comments {
+    * id : serial
+    --
+    ...
+}
+
+entity "Реакция" as reactions {
+    act_id : serial <<unique>>
+    --
+    user_id : integer <<FK users (id)>>
+    post_id : integer <<FK posts (id)>>
+    comment_id : integer <<FK comments (id)>>
+    reaction : uint8 <<encoded>>
+}
+
+users ||--o{ reactions
+posts |o--o{ reactions
+comments |o--o{ reactions
+
+@enduml

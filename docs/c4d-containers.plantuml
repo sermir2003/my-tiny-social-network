@@ -1,0 +1,40 @@
+@startuml c4d-systems
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+skinparam wrapWidth 300
+LAYOUT_WITH_LEGEND()
+' skinparam linetype ortho
+LAYOUT_TOP_DOWN()
+
+title
+    C4 диаграмма конейнеров
+end title
+
+System_Boundary(main, "Главный сервис") {
+    Container(main_core, "Коммуникация с пользователем", "Golang")
+    ContainerDb(users_db, "БД user identity", "Postgres", "Id, логин, почта, пароль,...")
+    Rel(main_core, users_db, "регистрация, аутентификация", "SQL-запросы")
+}
+
+System_Boundary(stats, "Сервис статистик") {
+    ContainerQueue(stats_queue, "Брокер сообщений статистики", "Kafka")
+    Container(stats_core, "Подсчёт просмотров и реакций", "Golang")
+    ContainerDb(stats_db, "БД просмотров и реакций", "ClickHouse")
+    Rel(stats_core, stats_queue, "Получение новостей", "Kafka API")
+    Rel(stats_core, stats_db, "Чтение и обновление информации", "SQL-запросы")
+}
+
+System_Boundary(ugc, "Сервис UGC") {
+    Container(ugc_core, "Управление UGC", "Golang")
+    ContainerDb(ugc_db, "БД UGC", "Postgres", "Посты и комментарии")
+    Rel(ugc_core, ugc_db, "Чтение и обновление информации", "SQL-запросы")
+}
+
+Person(user, "Пользователь")
+
+Rel(user, main_core, "Всё API пользователя", "REST API")
+Rel(main_core, stats_queue, "Информирование об активностях", "Kafka API")
+Rel(main_core, ugc_core, "Чтение и изменение ugc", "gRPC")
+Rel(main_core, stats_core, "Получение статистик", "gRPC")
+
+@enduml

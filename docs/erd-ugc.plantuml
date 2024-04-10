@@ -1,0 +1,42 @@
+@startuml erd-ugc
+
+skinparam linetype ortho
+
+title
+    Диаграмма сущностей БД сервиса UGC
+end title
+
+entity "Пользователь" as users {
+    * id : serial
+    --
+    ...
+}
+
+entity "Пост" as posts {
+    * post_id : serial
+    --
+    * author_id : integer <<FK users (id)>>
+    * content : text
+    * create_timestamp : timestamp
+    update_timestamp : timestamp
+}
+
+entity "Комментарий" as comments {
+    * id : serial
+    --
+    * author_id : integer <<FK users (id)>>
+    * parent_post_id : integer <<FK posts (id)>>
+    * parent_comment_id : integer <<FK comments (id)>>
+    * content : text
+    * create_timestamp : timestamp
+    update_timestamp : timestamp
+    --
+    CHECK ((parent_post_id IS NULL)::int
+    ㅤㅤㅤㅤㅤ+ (parent_comment_id IS NULL)::int == 1)
+}
+
+users ||--o{ posts
+posts |o--o{ comments
+comments |o--o{ comments
+
+@enduml

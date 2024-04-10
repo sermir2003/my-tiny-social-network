@@ -1,0 +1,18 @@
+@startuml c4d-systems
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+skinparam wrapWidth 250
+skinparam wrapMessageWidth 400
+LAYOUT_WITH_LEGEND()
+
+title
+    C4 диаграмма контекста
+end title
+
+System(main, "Социальная сеть")
+
+Person(user, "Пользователь")
+
+Rel(user, main, "Всё API пользователя")
+
+@enduml
