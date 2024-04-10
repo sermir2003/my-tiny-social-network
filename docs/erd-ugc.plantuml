@@ -6,37 +6,37 @@ title
     Диаграмма сущностей БД сервиса UGC
 end title
 
-entity "Пользователь" as cred {
-    id : uuid NOT NULL
+entity "Пользователь" as users {
+    * id : serial
     --
     ...
 }
 
-entity "Пост" as post {
-    post_id : uuid NOT NULL
+entity "Пост" as posts {
+    * post_id : serial
     --
-    author_id : uuid NOT NULL REFERENCES creds (id)
-    content : text NOT NULL
-    create_timestamp : timestamp NOT NULL
+    * author_id : integer <<FK users (id)>>
+    * content : text
+    * create_timestamp : timestamp
     update_timestamp : timestamp
 }
 
-entity "Комментарий" as comment {
-    id : serial NOT NULL
+entity "Комментарий" as comments {
+    * id : serial
     --
-    author_id : uuid NOT NULL REFERENCES creds (id)
-    parent_post_id : uuid REFERENCES post (id)
-    parent_comment_id : uuid REFERENCES comment (id)
-    content : text NOT NULL
-    create_timestamp : timestamp NOT NULL
+    * author_id : integer <<FK users (id)>>
+    * parent_post_id : integer <<FK posts (id)>>
+    * parent_comment_id : integer <<FK comments (id)>>
+    * content : text
+    * create_timestamp : timestamp
     update_timestamp : timestamp
     --
-    CHECK (parent_post_id IS NOT NULL
-    OR parent_comment_id IS NOT NULL)
+    CHECK ((parent_post_id IS NULL)::int
+    ㅤㅤㅤㅤㅤ+ (parent_comment_id IS NULL)::int == 1)
 }
 
-cred ||--o{ post
-post ||--o{ comment
-comment ||--o{ comment
+users ||--o{ posts
+posts |o--o{ comments
+comments |o--o{ comments
 
 @enduml

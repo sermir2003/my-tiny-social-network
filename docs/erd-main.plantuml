@@ -2,27 +2,21 @@
 
 skinparam linetype ortho
 
-entity "Живой человек" as human {}
+entity "Живой человек" as humans {}
 
-entity "Кредитка" as cred {
-    id : uuid NOT NULL
+entity "Пользователь" as users {
+    * id : serial
     --
-    login : varchar(255) UNIQUE NOT NULL
-    salt bytea NOT NULL
-    password text NOT NULL
+    * login : varchar(255) <<unique>>
+    * salt : bytea
+    * password : text
+    name : varchar(255)
+    surname : varchar(255)
+    birthdate : date
+    email : varchar(255)
+    phone : varchar(32)
 }
 
-entity "Данные" as data {
-    id : uuid NOT NULL
-    --
-    name : varchar(255) NOT NULL
-    surname : varchar(255) NOT NULL
-    birthdate : date NOT NULL
-    email : varchar(255) NOT NULL
-    phone : varchar(32) NOT NULL
-}
-
-human ||--o{ cred
-cred ||--|| data
+humans ||--o{ users
 
 @enduml

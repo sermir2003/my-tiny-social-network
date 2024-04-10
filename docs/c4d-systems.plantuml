@@ -6,17 +6,13 @@ skinparam wrapMessageWidth 400
 LAYOUT_WITH_LEGEND()
 
 title
-    C4 диаграмма систем
+    C4 диаграмма контекста
 end title
 
-System(main, "Главный сервис")
-System(stats, "Сервис статистик")
-System(heavy_ugc, "Сервис UGC")
+System(main, "Социальная сеть")
 
 Person(user, "Пользователь")
 
 Rel(user, main, "Всё API пользователя")
-Rel(main, stats, "Информирование об активностях")
-Rel(main, heavy_ugc, "Работа с UGC")
 
 @enduml

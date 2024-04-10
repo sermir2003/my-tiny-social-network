@@ -3,6 +3,8 @@
 
 skinparam wrapWidth 300
 LAYOUT_WITH_LEGEND()
+' skinparam linetype ortho
+LAYOUT_TOP_DOWN()
 
 title
     C4 диаграмма конейнеров
@@ -31,7 +33,8 @@ System_Boundary(ugc, "Сервис UGC") {
 Person(user, "Пользователь")
 
 Rel(user, main_core, "Всё API пользователя", "REST API")
-Rel(main_core, stats_queue, "Информирование об активностях и получение статистик", "Kafka API")
-Rel(main_core, ugc_core, "Чтение и изменение ugc", "RPC")
+Rel(main_core, stats_queue, "Информирование об активностях", "Kafka API")
+Rel(main_core, ugc_core, "Чтение и изменение ugc", "gRPC")
+Rel(main_core, stats_core, "Получение статистик", "gRPC")
 
 @enduml
