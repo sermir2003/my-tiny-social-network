@@ -12,8 +12,9 @@ import (
 
 func main() {
 	err := db_utils.StartUpDB()
-	if err != nil {
-		log.Fatal(err)
+	for err != nil {
+		log.Println(err, "retrying...")
+		err = db_utils.StartUpDB()
 	}
 	jwt_utils.StartUpJWT()
 
@@ -23,7 +24,7 @@ func main() {
 
 	authed := r.Group("")
 	authed.Use(middlewares.AuthMiddleware)
-	authed.PUT("/api/v1/user/update-personal", controllers.UpdatePersonal)
+	authed.PUT("/api/v1/user/personal", controllers.UpdatePersonal)
 
 	r.Run(":8081")
 }

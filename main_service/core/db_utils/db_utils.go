@@ -3,11 +3,11 @@ package db_utils
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"main_service_core/models"
 	salt_utils "main_service_core/salt_utils"
 	"os"
 
-	uuid "github.com/google/uuid"
 	_ "github.com/lib/pq"
 )
 
@@ -32,57 +32,50 @@ func StartUpDB() error {
 	return nil
 }
 
-func CreateNewUser(creds models.Credentials) (uuid.UUID, error) {
+func CreateNewUser(creds models.Credentials) (id uint32, err error) {
 	tx, err := DB.Begin()
 	if err != nil {
-		return uuid.Nil, err
+		return 0, err
 	}
 	defer tx.Rollback()
 
 	var cnt_such_login int
 	err = tx.QueryRow(`
 		SELECT count(*)
-		FROM credentials
+		FROM users
 		WHERE login = $1`,
 		creds.Login,
 	).Scan(&cnt_such_login)
 	if err != nil {
-		return uuid.Nil, err
+		return 0, err
 	}
 
 	if cnt_such_login > 0 {
-		return uuid.Nil, nil
+		return 0, nil
 	}
 
-	id := uuid.New()
 	salt, err := salt_utils.GenerateSalt()
 	if err != nil {
-		return uuid.Nil, err
+		return 0, err
 	}
 	password := salt_utils.HashPassword(creds.Password, salt)
 
-	_, err = tx.Exec(`
-		INSERT INTO credentials (id, login, salt, password)
-		VALUES ($1, $2, $3, $4)`,
-		id,
+	err = tx.QueryRow(`
+		INSERT INTO users (login, salt, password)
+		VALUES ($1, $2, $3)
+		RETURNING id`,
 		creds.Login,
 		salt,
 		password,
-	)
+	).Scan(&id)
 	if err != nil {
-		return uuid.Nil, err
+		return 0, err
 	}
 
-	_, err = tx.Exec(`
-		INSERT INTO personal_data (id, name, surname, birthdate, email, phone)
-		VALUES ($1, NULL, NULL, NULL, NULL, NULL)`,
-		id,
-	)
+	err = tx.Commit()
 	if err != nil {
-		return uuid.Nil, err
+		return 0, err
 	}
-
-	tx.Commit()
 
 	return id, nil
 }
@@ -92,7 +85,7 @@ func CheckPassword(creds models.Credentials) (bool, error) {
 	var existing_password string
 	err := DB.QueryRow(`
 		SELECT salt, password
-		FROM credentials
+		FROM users
 		WHERE login = $1`,
 		creds.Login,
 	).Scan(&salt, &existing_password)
@@ -104,31 +97,31 @@ func CheckPassword(creds models.Credentials) (bool, error) {
 	return salt_utils.DoPasswordsMatch(creds.Password, salt, existing_password), nil
 }
 
-func GetId(login string) (uuid.UUID, error) {
-	var id uuid.UUID
-	err := DB.QueryRow(`
+func GetId(login string) (id uint32, err error) {
+	err = DB.QueryRow(`
 		SELECT id
-		FROM credentials
+		FROM users
 		WHERE login = $1`,
 		login,
 	).Scan(&id)
 	if err != nil {
-		return uuid.Nil, err
+		return 0, err
 	}
 	return id, nil
 }
 
-func UpdatePersonal(id uuid.UUID, data models.PersonalData) error {
+func UpdatePersonal(id uint32, personal models.PersonalData) error {
+	log.Println("UpdatePersonal id=", id)
 	_, err := DB.Exec(`
-		UPDATE personal_data
+		UPDATE users
 		SET (name, surname, birthdate, email, phone) = ($2, $3, $4, $5, $6)
 		WHERE id = $1`,
 		id,
-		data.Name,
-		data.Surname,
-		data.Birthdate,
-		data.Email,
-		data.Phone,
+		personal.Name,
+		personal.Surname,
+		personal.Birthdate,
+		personal.Email,
+		personal.Phone,
 	)
 	return err
 }

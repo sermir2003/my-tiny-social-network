@@ -3,11 +3,12 @@ package jwt_utils
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
+	"strconv"
 	"time"
 
 	jwt "github.com/golang-jwt/jwt"
-	"github.com/google/uuid"
 )
 
 var JWT_SECRET []byte = nil
@@ -16,11 +17,12 @@ func StartUpJWT() {
 	JWT_SECRET = []byte(os.Getenv("JWT_SECRET"))
 }
 
-func CreateJWT(id uuid.UUID) (string, error) {
+func CreateJWT(id uint32) (string, error) {
+	log.Println("CreateJWT: ", id)
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
 		jwt.MapClaims{
-			"id":       id.String(),
+			"id":       strconv.FormatUint(uint64(id), 10),
 			"exp_time": time.Now().Add(15 * time.Minute).Format(time.RFC3339),
 		},
 	)
@@ -33,7 +35,7 @@ func CreateJWT(id uuid.UUID) (string, error) {
 	return tokenString, nil
 }
 
-func GetStrIdFromJWT(tokenString string) (id string, err error) {
+func GetIdStrFromJWT(tokenString string) (string, error) {
 	token, err := jwt.Parse(
 		tokenString,
 		func(token *jwt.Token) (interface{}, error) {
@@ -61,12 +63,12 @@ func GetStrIdFromJWT(tokenString string) (id string, err error) {
 			return "", errors.New("expired token")
 		}
 
-		id_str, is_string := claims["id"].(string)
+		encoded_id, is_string := claims["id"].(string)
 		if !is_string {
-			return "", errors.New("invalid token")
+			return "", errors.New("invalid token type")
 		}
 
-		return id_str, nil
+		return encoded_id, nil
 	}
 	return "", errors.New("invalid token")
 }

@@ -43,7 +43,7 @@ paths:
         '400':
           $ref: '#/components/responses/InvalidCredentialsError'
           
-  /user/update-personal:
+  /user/personal:
     put:
       summary: Change personal data like name, surname, etc
       operationId: update_personal
