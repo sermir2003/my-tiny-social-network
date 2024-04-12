@@ -10,7 +10,7 @@ paths:
   /user/sign-up:
     post:
       summary: Registers new user with provided data
-      operationId: register
+      operationId: SignUp
       tags:
         - auth
       requestBody:
@@ -28,7 +28,7 @@ paths:
   /user/sign-in:
     post:
       summary: Login via password
-      operationId: login
+      operationId: SignIn
       tags:
         - auth
       requestBody:
@@ -46,7 +46,7 @@ paths:
   /user/personal:
     put:
       summary: Change personal data like name, surname, etc
-      operationId: update_personal
+      operationId: UpdatePersonal
       tags:
         - personal
       security:
@@ -61,7 +61,167 @@ paths:
         '200':
           description: Success
         '400':
-          $ref: '#/components/responses/InvalidPersonalDataError'
+          description: Personal data is missing or not valid
+        '401':
+          $ref: '#/components/responses/TokenUnauthorizedError'
+  
+  /post:
+    post:
+      summary: Create post
+      operationId: CreatePost
+      tags:
+        - post
+      security:
+        - TokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: Post content
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: Is it pitiful if you can't wear a beautiful kimono?
+              required:
+                - content
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Post content is missing
+        '401':
+          $ref: '#/components/responses/TokenUnauthorizedError'
+  
+  /post/{id}:
+    put:
+      summary: Update post
+      operationId: UpdatePost
+      tags:
+        - post
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Post id
+          required: true
+          schema:
+            type: integer
+            format: uint64
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: Post content
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: It's a new day in America.
+              required:
+                - content
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Post parameters are missing
+        '401':
+          $ref: '#/components/responses/TokenUnauthorizedError'
+        '403':
+          $ref: '#/components/responses/PostAccessDeniedError'
+        '404':
+          $ref: '#/components/responses/PostNotFoundError'
+    delete:
+      summary: Delete post
+      operationId: DeletePost
+      tags:
+        - post
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Post id
+          required: true
+          schema:
+            type: integer
+            format: uint64
+            example: 1
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Post parameter is missing
+        '401':
+          $ref: '#/components/responses/TokenUnauthorizedError'
+        '403':
+          $ref: '#/components/responses/PostAccessDeniedError'
+        '404':
+          $ref: '#/components/responses/PostNotFoundError'
+    get:
+      summary: Get post by id
+      operationId: GetPostById
+      tags:
+        - post
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Post id
+          required: true
+          schema:
+            type: integer
+            format: uint64
+            example: 1
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Post parameter is missing
+        '401':
+          $ref: '#/components/responses/TokenUnauthorizedError'
+        '403':
+          $ref: '#/components/responses/PostAccessDeniedError'
+        '404':
+          $ref: '#/components/responses/PostNotFoundError'
+  
+  /post/pagination:
+    post:
+      summary: Get pagination
+      operationId: GetPagination
+      tags:
+        - post
+      security:
+        - TokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: Pagination information
+              type: object
+              properties:
+                offset:
+                  type: integer
+                  format: uint64
+                  example: 0
+                limit:
+                  type: integer
+                  format: uint64
+                  example: 10
+              required:
+                - offset
+                - limit
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Pagination parameters are missing
         '401':
           $ref: '#/components/responses/TokenUnauthorizedError'
 
@@ -111,6 +271,27 @@ components:
           maxLength: 32
           example: "+2556517263803249791110286440017"
       minProperties: 1
+    
+    # Post:
+    #   description: All post data
+    #   type: object
+    #   properties:
+    #     post_id:
+    #       type: integer
+    #       format: uint32
+    #       example: 1
+    #     author_id:
+    #       type: integer
+    #       format: uint32
+    #       example: 1
+    #     content:
+    #       type: string
+    #       example: Is it pitiful if you can't wear a beautiful kimono?
+    #     create_timestamp:
+    #       type: string
+    #       format: date-time
+    #       example: 2024-04-12T14:17:43.308137+03
+    #     update_timestamp:
 
 
   responses:
@@ -124,14 +305,19 @@ components:
               token:
                 type: string
     
+    
+    
     InvalidCredentialsError:
       description: Credentials are missing or not valid or login has already been taken or wrong login or password
     
-    InvalidPersonalDataError:
-      description: Personal data is missing or not valid
-    
     TokenUnauthorizedError:
       description: API key is missing or invalid
+    
+    PostAccessDeniedError:
+      description: You do not have the authority to modify this post
+    
+    PostNotFoundError:
+      description: There is no post with provided id
 
 
   securitySchemes:

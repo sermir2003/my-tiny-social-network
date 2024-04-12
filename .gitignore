@@ -1,1 +1,6 @@
 main_service/users_db/data/
+ugc_service/ugc_db/data/
+ugc_service/core/proto/post/
+!ugc_service/core/proto/post
+main_service/core/proto/post/
+!main_service/core/proto/post

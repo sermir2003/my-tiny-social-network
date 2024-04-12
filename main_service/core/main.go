@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	controllers "main_service_core/controllers"
-	db_utils "main_service_core/db_utils"
-	jwt_utils "main_service_core/jwt_utils"
-	middlewares "main_service_core/middlewares"
+	"main_service_core/controllers"
+	"main_service_core/db_utils"
+	"main_service_core/middlewares"
+	pb "main_service_core/proto/post"
+	"main_service_core/utils"
 
 	gin "github.com/gin-gonic/gin"
 )
@@ -16,7 +18,11 @@ func main() {
 		log.Println(err, "retrying...")
 		err = db_utils.StartUpDB()
 	}
-	jwt_utils.StartUpJWT()
+
+	err = pb.Connect()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	r := gin.Default()
 	r.POST("/api/v1/user/sign-up", controllers.SignUp)
@@ -25,6 +31,13 @@ func main() {
 	authed := r.Group("")
 	authed.Use(middlewares.AuthMiddleware)
 	authed.PUT("/api/v1/user/personal", controllers.UpdatePersonal)
+	authed.POST("/api/v1/post", controllers.CreatePost)
+	authed.PUT("/api/v1/post/:id", controllers.UpdatePost)
+	authed.DELETE("/api/v1/post/:id", controllers.DeletePost)
+	authed.GET("/api/v1/post/:id", controllers.GetPostById)
+	authed.GET("/api/v1/post/pagination", controllers.GetPostPagination)
 
-	r.Run(":8081")
+	listening_line := fmt.Sprintf(":%s", utils.GetenvSafe("MAIN_SERVICE_PORT"))
+	log.Printf("listening at %s\n", listening_line)
+	r.Run(listening_line)
 }
