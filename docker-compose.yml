@@ -1,0 +1,93 @@
+networks:
+  main-inner-network:
+    driver: bridge
+  common-network:
+    driver: bridge
+  ugc-inner-network:
+    driver: bridge
+
+
+services:
+  common_pgadmin:
+    container_name: common_pgadmin
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    depends_on:
+      - users_db
+      - ugc_db
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - ${PGADMIN_PORT}:80
+    networks:
+      - main-inner-network
+      - ugc-inner-network
+
+  users_db:
+    container_name: ${USERS_DB_HOST}
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_DB: ${USERS_DB_DB}
+      POSTGRES_USER: ${USERS_DB_USER}
+      POSTGRES_PASSWORD: ${USERS_DB_PASSWORD}
+    volumes:
+      - ./main_service/users_db/data/:/var/lib/postgresql/data
+      - ./main_service/users_db/init_migrations:/docker-entrypoint-initdb.d
+    networks:
+      - main-inner-network
+  
+  main_core:
+    container_name: main_core
+    build: ./main_service/core
+    restart: unless-stopped
+    depends_on:
+      - users_db
+      - ugc_core
+    environment:
+      POSTGRES_HOST: ${USERS_DB_HOST}
+      POSTGRES_PORT: ${USERS_DB_PORT}
+      POSTGRES_USER: ${USERS_DB_USER}
+      POSTGRES_PASSWORD: ${USERS_DB_PASSWORD}
+      POSTGRES_DB: ${USERS_DB_DB}
+      JWT_SECRET: ${JWT_SECRET}
+      MAIN_SERVICE_PORT: ${MAIN_SERVICE_PORT}
+      UGC_SERVICE_PORT: ${UGC_SERVICE_PORT}
+    ports:
+      - ${SOCIAL_NETWORK_PORT}:${MAIN_SERVICE_PORT}
+    networks:
+      - main-inner-network
+      - common-network
+
+  ugc_db:
+    container_name: ${UGC_DB_HOST}
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_DB: ${UGC_DB_DB}
+      POSTGRES_USER: ${UGC_DB_USER}
+      POSTGRES_PASSWORD: ${UGC_DB_PASSWORD}
+    volumes:
+      - ./ugc_service/ugc_db/data/:/var/lib/postgresql/data
+      - ./ugc_service/ugc_db/init_migrations:/docker-entrypoint-initdb.d
+    networks:
+      - ugc-inner-network
+  
+  ugc_core:
+    container_name: ugc_core
+    build: ./ugc_service/core
+    restart: unless-stopped
+    depends_on:
+      - ugc_db
+    environment:
+      POSTGRES_HOST: ${UGC_DB_HOST}
+      POSTGRES_PORT: ${UGC_DB_PORT}
+      POSTGRES_USER: ${UGC_DB_USER}
+      POSTGRES_PASSWORD: ${UGC_DB_PASSWORD}
+      POSTGRES_DB: ${UGC_DB_DB}
+      UGC_SERVICE_PORT: ${UGC_SERVICE_PORT}
+      TIME_ZONE: ${UGC_TIME_ZONE}
+    networks:
+      - ugc-inner-network
+      - common-network

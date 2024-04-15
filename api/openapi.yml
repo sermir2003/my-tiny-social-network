@@ -1,0 +1,345 @@
+openapi: 3.0.0
+info:
+  title: Social Network User API
+  description: MyTinySocialNetwork User to Main server OpenAPI specification
+  version: 1.0.0
+  contact:
+    name: Sergey Mironov
+    email: sermir2003@gmail.com
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Dev server
+paths:
+  /user/sign-up:
+    post:
+      summary: Registration
+      description: Registers new user with provided data
+      operationId: SignUp
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+      responses:
+        '200':
+          $ref: '#/components/responses/Token'
+        '400':
+          $ref: '#/components/responses/InvalidCredentialsError'
+          
+  /user/sign-in:
+    post:
+      summary: Authtorization
+      description: Login via password
+      operationId: SignIn
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+      responses:
+        '200':
+          $ref: '#/components/responses/Token'
+        '400':
+          $ref: '#/components/responses/InvalidCredentialsError'
+          
+  /user/personal:
+    put:
+      summary: Change personal data
+      description: Change personal data like name, surname, date of birth, phone number, email
+      operationId: UpdatePersonal
+      tags:
+        - personal
+      security:
+        - TokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonalData'
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Personal data is missing or not valid
+        '401':
+          $ref: '#/components/responses/TokenUnauthorizedError'
+  
+  /post:
+    post:
+      summary: Create post
+      description: Create new post with provided content
+      operationId: CreatePost
+      tags:
+        - post
+      security:
+        - TokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: Post content
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: Is it pitiful if you can't wear a beautiful kimono?
+              required:
+                - content
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Post content is missing
+        '401':
+          $ref: '#/components/responses/TokenUnauthorizedError'
+  
+  /post/{id}:
+    put:
+      summary: Update post
+      description: Update content of post with provided id with provided new contest
+      operationId: UpdatePost
+      tags:
+        - post
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Post id
+          required: true
+          schema:
+            type: integer
+            format: uint64
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: Post content
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: It's a new day in America.
+              required:
+                - content
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Post parameters are missing
+        '401':
+          $ref: '#/components/responses/TokenUnauthorizedError'
+        '403':
+          $ref: '#/components/responses/PostAccessDeniedError'
+        '404':
+          $ref: '#/components/responses/PostNotFoundError'
+    delete:
+      summary: Delete post
+      description: Delete post with provided id
+      operationId: DeletePost
+      tags:
+        - post
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Post id
+          required: true
+          schema:
+            type: integer
+            format: uint64
+            example: 1
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Post parameter is missing
+        '401':
+          $ref: '#/components/responses/TokenUnauthorizedError'
+        '403':
+          $ref: '#/components/responses/PostAccessDeniedError'
+        '404':
+          $ref: '#/components/responses/PostNotFoundError'
+    get:
+      summary: Get post by id
+      description: Get post with provided id
+      operationId: GetPostById
+      tags:
+        - post
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Post id
+          required: true
+          schema:
+            type: integer
+            format: uint64
+            example: 1
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Post parameter is missing
+        '401':
+          $ref: '#/components/responses/TokenUnauthorizedError'
+        '403':
+          $ref: '#/components/responses/PostAccessDeniedError'
+        '404':
+          $ref: '#/components/responses/PostNotFoundError'
+  
+  /post/pagination:
+    post:
+      summary: Get pagination
+      description: Lets look at the sequence of posts of the user who sent the request. Lets sort it by creation timestamp. This method outputs a `limit` of posts from this sequence starting with `offset`. If there are fewer posts than the `limit`, it gives out how many there are.
+      operationId: GetPagination
+      tags:
+        - post
+      security:
+        - TokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: Pagination information
+              type: object
+              properties:
+                offset:
+                  type: integer
+                  format: uint64
+                  example: 0
+                limit:
+                  type: integer
+                  format: uint64
+                  example: 10
+              required:
+                - offset
+                - limit
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Pagination parameters are missing
+        '401':
+          $ref: '#/components/responses/TokenUnauthorizedError'
+
+
+components:
+  schemas:
+    Credentials:
+      description: Login and password
+      type: object
+      properties:
+        login:
+          type: string
+          pattern: '^[\w\-]{1,255}$'
+          example: super-nezuko0112
+        password:
+          type: string
+          pattern: '^[\w\-@$!%*#?&]{6,255}$'
+          example: secret#112
+      required:
+        - login
+        - password
+    
+    PersonalData:
+      description: Name, surname, birthdate, etc
+      type: object
+      properties:
+        name:
+          type: string
+          pattern: '^[A-Z][a-z]{0,254}$'
+          example: Nezuko
+        surname:
+          type: string
+          pattern: '^[A-Z][a-z]{0,254}$'
+          example: Kamado
+        birthdate:
+          type: string
+          format: date
+          example: 2004-12-28
+        email:
+          type: string
+          pattern: '^\w|\-+@\w|\-+\.\w|\-+$'
+          maxLength: 255
+          example: super-nezuko@DemonSlayer.anime
+        phone:
+          type: string
+          pattern: '^\+\d+$'
+          maxLength: 32
+          example: "+2556517263803249791110286440017"
+      minProperties: 1
+    
+    # Post:
+    #   description: All post data
+    #   type: object
+    #   properties:
+    #     post_id:
+    #       type: integer
+    #       format: uint32
+    #       example: 1
+    #     author_id:
+    #       type: integer
+    #       format: uint32
+    #       example: 1
+    #     content:
+    #       type: string
+    #       example: Is it pitiful if you can't wear a beautiful kimono?
+    #     create_timestamp:
+    #       type: string
+    #       format: date-time
+    #       example: 2024-04-12T14:17:43.308137+03
+    #     update_timestamp:
+
+
+  responses:
+    Token:
+      description: Token for futher authentification
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+    
+    
+    
+    InvalidCredentialsError:
+      description: Credentials are missing or not valid or login has already been taken or wrong login or password
+    
+    TokenUnauthorizedError:
+      description: API key is missing or invalid
+    
+    PostAccessDeniedError:
+      description: You do not have the authority to modify this post
+    
+    PostNotFoundError:
+      description: There is no post with provided id
+
+
+  securitySchemes:
+    TokenAuth:
+      name: X-API-Key
+      type: apiKey
+      in: header
+
+
+
+tags:
+  - name: auth
+  - name: personal
+  - name: post

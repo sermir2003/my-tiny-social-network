@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 	"main_service_core/models"
-	salt_utils "main_service_core/salt_utils"
-	"os"
+	"main_service_core/salt_utils"
+	"main_service_core/utils"
 
 	_ "github.com/lib/pq"
 )
@@ -14,16 +14,17 @@ import (
 var DB *sql.DB
 
 func StartUpDB() error {
-	postgresConnectionLine := fmt.Sprintf(
+	connection_string := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		os.Getenv("POSTGRES_HOST"),
-		os.Getenv("POSTGRES_PORT"),
-		os.Getenv("POSTGRES_USER"),
-		os.Getenv("POSTGRES_PASSWORD"),
-		os.Getenv("POSTGRES_DB"),
+		utils.GetenvSafe("POSTGRES_HOST"),
+		utils.GetenvSafe("POSTGRES_PORT"),
+		utils.GetenvSafe("POSTGRES_USER"),
+		utils.GetenvSafe("POSTGRES_PASSWORD"),
+		utils.GetenvSafe("POSTGRES_DB"),
 	)
+	log.Printf("trying to connect to ugc_db at %s\n", connection_string)
 
-	db, err := sql.Open("postgres", postgresConnectionLine)
+	db, err := sql.Open("postgres", connection_string)
 	if err != nil {
 		return err
 	}
@@ -111,7 +112,6 @@ func GetId(login string) (id uint32, err error) {
 }
 
 func UpdatePersonal(id uint32, personal models.PersonalData) error {
-	log.Println("UpdatePersonal id=", id)
 	_, err := DB.Exec(`
 		UPDATE users
 		SET (name, surname, birthdate, email, phone) = ($2, $3, $4, $5, $6)

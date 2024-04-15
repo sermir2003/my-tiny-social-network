@@ -5,7 +5,6 @@ import (
 	db_utils "main_service_core/db_utils"
 	jwt_utils "main_service_core/jwt_utils"
 	"main_service_core/models"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -75,22 +74,18 @@ func SignIn(c *gin.Context) {
 }
 
 func UpdatePersonal(c *gin.Context) {
-	id_uint64, err := strconv.ParseUint(c.GetString("id"), 10, 64)
-	if err != nil {
-		log.Println(err.Error())
-		c.JSON(500, gin.H{"error": "Internal error"})
+	id := getUserId(c)
+	if id == 0 {
 		return
 	}
-	id := uint32(id_uint64)
-	log.Println("id:", id)
 
 	var personal models.PersonalData
 	if err := c.BindJSON(&personal); err != nil {
-		c.JSON(400, gin.H{"error": "Personal personal data is missing"})
+		c.JSON(400, gin.H{"error": "Personal data is missing"})
 		return
 	}
 
-	err = db_utils.UpdatePersonal(id, personal)
+	err := db_utils.UpdatePersonal(id, personal)
 	if err != nil {
 		log.Println(err.Error())
 		c.JSON(500, gin.H{"error": "Internal error"})

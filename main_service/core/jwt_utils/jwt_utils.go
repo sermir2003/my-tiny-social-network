@@ -3,22 +3,16 @@ package jwt_utils
 import (
 	"errors"
 	"fmt"
-	"log"
-	"os"
+	"main_service_core/utils"
 	"strconv"
 	"time"
 
 	jwt "github.com/golang-jwt/jwt"
 )
 
-var JWT_SECRET []byte = nil
-
-func StartUpJWT() {
-	JWT_SECRET = []byte(os.Getenv("JWT_SECRET"))
-}
+var JWT_SECRET []byte = []byte(utils.GetenvSafe("JWT_SECRET"))
 
 func CreateJWT(id uint32) (string, error) {
-	log.Println("CreateJWT: ", id)
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
 		jwt.MapClaims{
