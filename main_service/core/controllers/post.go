@@ -167,8 +167,8 @@ func GetPostPagination(c *gin.Context) {
 	ctx := context.TODO()
 	req := pb.GetPaginationRequest{
 		AuthorId: author_id,
-		Offset:   pagination.Offset,
-		Limit:    pagination.Limit,
+		Offset:   *pagination.Offset,
+		Limit:    *pagination.Limit,
 	}
 
 	resp, err := pb.Client.GetPagination(ctx, &req)
