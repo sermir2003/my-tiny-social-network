@@ -12,9 +12,9 @@ import (
 var Client PostServiceClient
 
 func Connect() error {
-	connection_line := fmt.Sprintf("ugc_core:%s", utils.GetenvSafe("UGC_SERVICE_PORT"))
-	log.Printf("trying to connect to ugc_service at %s\n", connection_line)
-	conn, err := grpc.Dial(connection_line, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	connection_string := fmt.Sprintf("ugc_core:%s", utils.GetenvSafe("UGC_SERVICE_PORT"))
+	log.Printf("trying to connect to ugc_service at %s\n", connection_string)
+	conn, err := grpc.Dial(connection_string, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
 	}

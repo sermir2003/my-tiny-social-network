@@ -14,7 +14,7 @@ import (
 var DB *sql.DB
 
 func StartUpDB() error {
-	connection_line := fmt.Sprintf(
+	connection_string := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		utils.GetenvSafe("POSTGRES_HOST"),
 		utils.GetenvSafe("POSTGRES_PORT"),
@@ -22,9 +22,9 @@ func StartUpDB() error {
 		utils.GetenvSafe("POSTGRES_PASSWORD"),
 		utils.GetenvSafe("POSTGRES_DB"),
 	)
-	log.Printf("trying to connect to ugc_db at %s\n", connection_line)
+	log.Printf("trying to connect to ugc_db at %s\n", connection_string)
 
-	db, err := sql.Open("postgres", connection_line)
+	db, err := sql.Open("postgres", connection_string)
 	if err != nil {
 		return err
 	}
