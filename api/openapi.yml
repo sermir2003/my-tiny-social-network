@@ -3,13 +3,17 @@ info:
   title: Social Network User API
   description: MyTinySocialNetwork User to Main server OpenAPI specification
   version: 1.0.0
+  contact:
+    name: Sergey Mironov
+    email: sermir2003@gmail.com
 servers:
   - url: http://localhost:8080/api/v1
     description: Dev server
 paths:
   /user/sign-up:
     post:
-      summary: Registers new user with provided data
+      summary: Registration
+      description: Registers new user with provided data
       operationId: SignUp
       tags:
         - auth
@@ -27,7 +31,8 @@ paths:
           
   /user/sign-in:
     post:
-      summary: Login via password
+      summary: Authtorization
+      description: Login via password
       operationId: SignIn
       tags:
         - auth
@@ -45,7 +50,8 @@ paths:
           
   /user/personal:
     put:
-      summary: Change personal data like name, surname, etc
+      summary: Change personal data
+      description: Change personal data like name, surname, date of birth, phone number, email
       operationId: UpdatePersonal
       tags:
         - personal
@@ -68,6 +74,7 @@ paths:
   /post:
     post:
       summary: Create post
+      description: Create new post with provided content
       operationId: CreatePost
       tags:
         - post
@@ -97,6 +104,7 @@ paths:
   /post/{id}:
     put:
       summary: Update post
+      description: Update content of post with provided id with provided new contest
       operationId: UpdatePost
       tags:
         - post
@@ -137,6 +145,7 @@ paths:
           $ref: '#/components/responses/PostNotFoundError'
     delete:
       summary: Delete post
+      description: Delete post with provided id
       operationId: DeletePost
       tags:
         - post
@@ -164,6 +173,7 @@ paths:
           $ref: '#/components/responses/PostNotFoundError'
     get:
       summary: Get post by id
+      description: Get post with provided id
       operationId: GetPostById
       tags:
         - post
@@ -193,6 +203,7 @@ paths:
   /post/pagination:
     post:
       summary: Get pagination
+      description: Lets look at the sequence of posts of the user who sent the request. Lets sort it by creation timestamp. This method outputs a `limit` of posts from this sequence starting with `offset`. If there are fewer posts than the `limit`, it gives out how many there are.
       operationId: GetPagination
       tags:
         - post
@@ -250,11 +261,11 @@ components:
       properties:
         name:
           type: string
-          pattern: '^[A-Z][a-z]{,254}$'
+          pattern: '^[A-Z][a-z]{0,254}$'
           example: Nezuko
         surname:
           type: string
-          pattern: '^[A-Z][a-z]{,254}$'
+          pattern: '^[A-Z][a-z]{0,254}$'
           example: Kamado
         birthdate:
           type: string
@@ -325,3 +336,10 @@ components:
       name: X-API-Key
       type: apiKey
       in: header
+
+
+
+tags:
+  - name: auth
+  - name: personal
+  - name: post
