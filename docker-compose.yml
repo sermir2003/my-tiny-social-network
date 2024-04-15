@@ -8,6 +8,22 @@ networks:
 
 
 services:
+  common_pgadmin:
+    container_name: common_pgadmin
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    depends_on:
+      - users_db
+      - ugc_db
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - ${PGADMIN_PORT}:80
+    networks:
+      - main-inner-network
+      - ugc-inner-network
+
   users_db:
     container_name: ${USERS_DB_HOST}
     image: postgres:16
@@ -19,20 +35,6 @@ services:
     volumes:
       - ./main_service/users_db/data/:/var/lib/postgresql/data
       - ./main_service/users_db/init_migrations:/docker-entrypoint-initdb.d
-    networks:
-      - main-inner-network
-
-  main_pgadmin:
-    container_name: main_pgadmin
-    image: dpage/pgadmin4
-    restart: unless-stopped
-    depends_on:
-      - users_db
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${MAIN_PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${MAIN_PGADMIN_DEFAULT_PASSWORD}
-    ports:
-      - ${MAIN_PGADMIN_PORT}:80
     networks:
       - main-inner-network
   
@@ -69,20 +71,6 @@ services:
     volumes:
       - ./ugc_service/ugc_db/data/:/var/lib/postgresql/data
       - ./ugc_service/ugc_db/init_migrations:/docker-entrypoint-initdb.d
-    networks:
-      - ugc-inner-network
-  
-  ugc_pgadmin:
-    container_name: ugc_pgadmin
-    image: dpage/pgadmin4
-    restart: unless-stopped
-    depends_on:
-      - ugc_db
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${UGC_PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${UGC_PGADMIN_DEFAULT_PASSWORD}
-    ports:
-      - ${UGC_PGADMIN_PORT}:80
     networks:
       - ugc-inner-network
   
