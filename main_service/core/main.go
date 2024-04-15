@@ -35,7 +35,7 @@ func main() {
 	authed.PUT("/api/v1/post/:id", controllers.UpdatePost)
 	authed.DELETE("/api/v1/post/:id", controllers.DeletePost)
 	authed.GET("/api/v1/post/:id", controllers.GetPostById)
-	authed.GET("/api/v1/post/pagination", controllers.GetPostPagination)
+	authed.POST("/api/v1/post/pagination", controllers.GetPostPagination)
 
 	listening_line := fmt.Sprintf(":%s", utils.GetenvSafe("MAIN_SERVICE_PORT"))
 	log.Printf("listening at %s\n", listening_line)

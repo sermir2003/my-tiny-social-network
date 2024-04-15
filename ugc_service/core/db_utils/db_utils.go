@@ -4,12 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 	pb "ugc_service_core/proto/post"
 	"ugc_service_core/utils"
 
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var db *sql.DB
@@ -158,6 +160,23 @@ func Delete(req *pb.DeleteRequest) (*pb.DeleteResponse, error) {
 	}, nil
 }
 
+func scanPost(row interface {
+	Scan(dest ...interface{}) error
+}) (*pb.Post, error) {
+	var post pb.Post
+	var create_timestamp time.Time
+	var update_timestamp sql.NullTime
+	err := row.Scan(&post.PostId, &post.AuthorId, &post.Content, &create_timestamp, &update_timestamp)
+	if err != nil {
+		return nil, err
+	}
+	post.CreateTimestamp = timestamppb.New(create_timestamp)
+	if update_timestamp.Valid {
+		post.UpdateTimestamp = timestamppb.New(update_timestamp.Time)
+	}
+	return &post, nil
+}
+
 func GetById(req *pb.GetByIdRequest) (*pb.GetByIdResponse, error) {
 	access, tx, err := beginTxAndCheckAccess(req.PostId, req.AuthorId)
 	if err != nil {
@@ -174,13 +193,13 @@ func GetById(req *pb.GetByIdRequest) (*pb.GetByIdResponse, error) {
 		}, nil
 	}
 
-	var post pb.Post
-	err = tx.QueryRow(`
+	row := tx.QueryRow(`
 		SELECT post_id, author_id, content, create_timestamp, update_timestamp
 		FROM posts
 		WHERE post_id = $1`,
 		req.PostId,
-	).Scan(&post.PostId, &post.AuthorId, &post.Content, &post.CreateTimestamp, &post.UpdateTimestamp)
+	)
+	post, err := scanPost(row)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to select: %v", err)
 	}
@@ -192,7 +211,7 @@ func GetById(req *pb.GetByIdRequest) (*pb.GetByIdResponse, error) {
 
 	return &pb.GetByIdResponse{
 		Access: pb.AccessResult_SUCCESS,
-		Post:   &post,
+		Post:   post,
 	}, nil
 }
 
@@ -214,12 +233,11 @@ func GetPagination(req *pb.GetPaginationRequest) (*pb.GetPaginationResponse, err
 
 	var posts []*pb.Post
 	for rows.Next() {
-		var post pb.Post
-		err = rows.Scan(&post.PostId, &post.AuthorId, &post.Content, &post.CreateTimestamp, &post.UpdateTimestamp)
+		post, err := scanPost(rows)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, "failed to scan: %v", err)
 		}
-		posts = append(posts, &post)
+		posts = append(posts, post)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, status.Errorf(codes.Internal, "error iterating over rows: %v", err)

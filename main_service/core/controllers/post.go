@@ -159,6 +159,7 @@ func GetPostPagination(c *gin.Context) {
 
 	var pagination models.Pagination
 	if err := c.BindJSON(&pagination); err != nil {
+		log.Println(err)
 		c.JSON(400, gin.H{"error": "Pagination parameters are missing"})
 		return
 	}
