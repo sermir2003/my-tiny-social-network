@@ -87,6 +87,7 @@ services:
       POSTGRES_PASSWORD: ${UGC_DB_PASSWORD}
       POSTGRES_DB: ${UGC_DB_DB}
       UGC_SERVICE_PORT: ${UGC_SERVICE_PORT}
+      TIME_ZONE: ${UGC_TIME_ZONE}
     networks:
       - ugc-inner-network
       - common-network

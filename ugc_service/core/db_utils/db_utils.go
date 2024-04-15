@@ -18,12 +18,13 @@ var db *sql.DB
 
 func StartUpDB() (err error) {
 	connection_string := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable TimeZone=%s",
 		utils.GetenvSafe("POSTGRES_HOST"),
 		utils.GetenvSafe("POSTGRES_PORT"),
 		utils.GetenvSafe("POSTGRES_USER"),
 		utils.GetenvSafe("POSTGRES_PASSWORD"),
 		utils.GetenvSafe("POSTGRES_DB"),
+		utils.GetenvSafe("TIME_ZONE"),
 	)
 	log.Printf("trying to connect to ugc_db at %s\n", connection_string)
 
