@@ -4,6 +4,7 @@ WORKDIR /app
 RUN apt update && apt install --assume-yes tree
 
 COPY . .
+RUN mkdir -p ./proto/post
 COPY ../../proto/post/post.proto ./proto/post
 
 RUN tree .

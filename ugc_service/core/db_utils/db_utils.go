@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
-	pb "ugc_service_core/proto/post"
+	post_pb "ugc_service_core/proto/post"
 	"ugc_service_core/utils"
 
 	_ "github.com/lib/pq"
@@ -36,8 +36,8 @@ func StartUpDB() (err error) {
 	return nil
 }
 
-func Create(req *pb.CreateRequest) (*pb.CreateResponse, error) {
-	var post_id uint32
+func Create(req *post_pb.CreateRequest) (*post_pb.CreateResponse, error) {
+	var post_id uint64
 	err := db.QueryRow(`
 		INSERT INTO posts (author_id, content, create_timestamp)
 		VALUES ($1, $2, NOW())
@@ -48,7 +48,7 @@ func Create(req *pb.CreateRequest) (*pb.CreateResponse, error) {
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to insert: %v", err)
 	}
-	return &pb.CreateResponse{
+	return &post_pb.CreateResponse{
 		PostId: post_id,
 	}, nil
 }
@@ -61,13 +61,13 @@ const (
 	NOT_FOUND     AccessResult = 2
 )
 
-func beginTxAndCheckAccess(post_id uint32, author_id uint32) (AccessResult, *sql.Tx, error) {
+func beginTxAndCheckAccess(post_id uint64, author_id uint64) (AccessResult, *sql.Tx, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return 0, nil, err
 	}
 
-	var existing_author_id uint32
+	var existing_author_id uint64
 	err = tx.QueryRow(`
 		SELECT author_id
 		FROM posts
@@ -89,19 +89,19 @@ func beginTxAndCheckAccess(post_id uint32, author_id uint32) (AccessResult, *sql
 	return SUCCESS, tx, nil
 }
 
-func Update(req *pb.UpdateRequest) (*pb.UpdateResponse, error) {
+func Update(req *post_pb.UpdateRequest) (*post_pb.UpdateResponse, error) {
 	access, tx, err := beginTxAndCheckAccess(req.PostId, req.AuthorId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to start tx or check access: %v", err)
 	}
 	if access == ACCESS_DENIED {
-		return &pb.UpdateResponse{
-			Access: pb.AccessResult_ACCESS_DENIED,
+		return &post_pb.UpdateResponse{
+			Access: post_pb.AccessResult_ACCESS_DENIED,
 		}, nil
 	}
 	if access == NOT_FOUND {
-		return &pb.UpdateResponse{
-			Access: pb.AccessResult_NOT_FOUND,
+		return &post_pb.UpdateResponse{
+			Access: post_pb.AccessResult_NOT_FOUND,
 		}, nil
 	}
 
@@ -121,24 +121,24 @@ func Update(req *pb.UpdateRequest) (*pb.UpdateResponse, error) {
 		return nil, status.Errorf(codes.Internal, "failed to commit transaction: %v", err)
 	}
 
-	return &pb.UpdateResponse{
-		Access: pb.AccessResult_SUCCESS,
+	return &post_pb.UpdateResponse{
+		Access: post_pb.AccessResult_SUCCESS,
 	}, nil
 }
 
-func Delete(req *pb.DeleteRequest) (*pb.DeleteResponse, error) {
+func Delete(req *post_pb.DeleteRequest) (*post_pb.DeleteResponse, error) {
 	access, tx, err := beginTxAndCheckAccess(req.PostId, req.AuthorId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to start tx or check access: %v", err)
 	}
 	if access == ACCESS_DENIED {
-		return &pb.DeleteResponse{
-			Access: pb.AccessResult_ACCESS_DENIED,
+		return &post_pb.DeleteResponse{
+			Access: post_pb.AccessResult_ACCESS_DENIED,
 		}, nil
 	}
 	if access == NOT_FOUND {
-		return &pb.DeleteResponse{
-			Access: pb.AccessResult_NOT_FOUND,
+		return &post_pb.DeleteResponse{
+			Access: post_pb.AccessResult_NOT_FOUND,
 		}, nil
 	}
 
@@ -156,15 +156,15 @@ func Delete(req *pb.DeleteRequest) (*pb.DeleteResponse, error) {
 		return nil, status.Errorf(codes.Internal, "failed to commit transaction: %v", err)
 	}
 
-	return &pb.DeleteResponse{
-		Access: pb.AccessResult_SUCCESS,
+	return &post_pb.DeleteResponse{
+		Access: post_pb.AccessResult_SUCCESS,
 	}, nil
 }
 
 func scanPost(row interface {
 	Scan(dest ...interface{}) error
-}) (*pb.Post, error) {
-	var post pb.Post
+}) (*post_pb.Post, error) {
+	var post post_pb.Post
 	var create_timestamp time.Time
 	var update_timestamp sql.NullTime
 	err := row.Scan(&post.PostId, &post.AuthorId, &post.Content, &create_timestamp, &update_timestamp)
@@ -178,19 +178,19 @@ func scanPost(row interface {
 	return &post, nil
 }
 
-func GetById(req *pb.GetByIdRequest) (*pb.GetByIdResponse, error) {
+func GetById(req *post_pb.GetByIdRequest) (*post_pb.GetByIdResponse, error) {
 	access, tx, err := beginTxAndCheckAccess(req.PostId, req.AuthorId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to start tx or check access: %v", err)
 	}
 	if access == ACCESS_DENIED {
-		return &pb.GetByIdResponse{
-			Access: pb.AccessResult_ACCESS_DENIED,
+		return &post_pb.GetByIdResponse{
+			Access: post_pb.AccessResult_ACCESS_DENIED,
 		}, nil
 	}
 	if access == NOT_FOUND {
-		return &pb.GetByIdResponse{
-			Access: pb.AccessResult_NOT_FOUND,
+		return &post_pb.GetByIdResponse{
+			Access: post_pb.AccessResult_NOT_FOUND,
 		}, nil
 	}
 
@@ -210,13 +210,13 @@ func GetById(req *pb.GetByIdRequest) (*pb.GetByIdResponse, error) {
 		return nil, status.Errorf(codes.Internal, "failed to commit transaction: %v", err)
 	}
 
-	return &pb.GetByIdResponse{
-		Access: pb.AccessResult_SUCCESS,
+	return &post_pb.GetByIdResponse{
+		Access: post_pb.AccessResult_SUCCESS,
 		Post:   post,
 	}, nil
 }
 
-func GetPagination(req *pb.GetPaginationRequest) (*pb.GetPaginationResponse, error) {
+func GetPagination(req *post_pb.GetPaginationRequest) (*post_pb.GetPaginationResponse, error) {
 	rows, err := db.Query(`
 		SELECT post_id, author_id, content, create_timestamp, update_timestamp
 		FROM posts
@@ -232,7 +232,7 @@ func GetPagination(req *pb.GetPaginationRequest) (*pb.GetPaginationResponse, err
 	}
 	defer rows.Close()
 
-	var posts []*pb.Post
+	var posts []*post_pb.Post
 	for rows.Next() {
 		post, err := scanPost(rows)
 		if err != nil {
@@ -244,7 +244,7 @@ func GetPagination(req *pb.GetPaginationRequest) (*pb.GetPaginationResponse, err
 		return nil, status.Errorf(codes.Internal, "error iterating over rows: %v", err)
 	}
 
-	return &pb.GetPaginationResponse{
+	return &post_pb.GetPaginationResponse{
 		Posts: posts,
 	}, nil
 }

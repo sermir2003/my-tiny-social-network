@@ -6,10 +6,10 @@ import (
 	"main_service_core/controllers"
 	"main_service_core/db_utils"
 	"main_service_core/middlewares"
-	pb "main_service_core/proto/post"
+	post_pb "main_service_core/proto/post"
 	"main_service_core/utils"
 
-	gin "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 		err = db_utils.StartUpDB()
 	}
 
-	err = pb.Connect()
+	err = post_pb.Connect()
 	if err != nil {
 		log.Fatal(err)
 	}

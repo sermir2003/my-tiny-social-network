@@ -15,17 +15,17 @@ service PostService {
 }
 
 message CreateRequest {
-    uint32 author_id = 1;
+    uint64 author_id = 1;
     string content = 2;
 }
 
 message CreateResponse {
-    uint32 post_id = 1;
+    uint64 post_id = 1;
 }
 
 message UpdateRequest {
-    uint32 author_id = 1;
-    uint32 post_id = 2;
+    uint64 author_id = 1;
+    uint64 post_id = 2;
     string content = 3;
 }
 
@@ -40,8 +40,8 @@ message UpdateResponse {
 }
 
 message DeleteRequest {
-    uint32 author_id = 1;
-    uint32 post_id = 2;
+    uint64 author_id = 1;
+    uint64 post_id = 2;
 }
 
 message DeleteResponse {
@@ -49,13 +49,13 @@ message DeleteResponse {
 }
 
 message GetByIdRequest {
-    uint32 author_id = 1;
-    uint32 post_id = 2;
+    uint64 author_id = 1;
+    uint64 post_id = 2;
 }
 
 message Post {
-    uint32 post_id = 1;
-    uint32 author_id = 2;
+    uint64 post_id = 1;
+    uint64 author_id = 2;
     string content = 3;
     google.protobuf.Timestamp create_timestamp = 4;
     optional google.protobuf.Timestamp update_timestamp = 5;
@@ -67,8 +67,8 @@ message GetByIdResponse {
 }
 
 message GetPaginationRequest {
-    uint32 author_id = 1;
-    uint32 offset = 2;
+    uint64 author_id = 1;
+    uint64 offset = 2;
     uint32 limit = 3;
 }
 

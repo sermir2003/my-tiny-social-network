@@ -33,7 +33,7 @@ func StartUpDB() error {
 	return nil
 }
 
-func CreateNewUser(creds models.Credentials) (id uint32, err error) {
+func CreateNewUser(creds models.Credentials) (id uint64, err error) {
 	tx, err := DB.Begin()
 	if err != nil {
 		return 0, err
@@ -98,7 +98,7 @@ func CheckPassword(creds models.Credentials) (bool, error) {
 	return salt_utils.DoPasswordsMatch(creds.Password, salt, existing_password), nil
 }
 
-func GetId(login string) (id uint32, err error) {
+func GetId(login string) (id uint64, err error) {
 	err = DB.QueryRow(`
 		SELECT id
 		FROM users
@@ -111,7 +111,7 @@ func GetId(login string) (id uint32, err error) {
 	return id, nil
 }
 
-func UpdatePersonal(id uint32, personal models.PersonalData) error {
+func UpdatePersonal(id uint64, personal models.PersonalData) error {
 	_, err := DB.Exec(`
 		UPDATE users
 		SET (name, surname, birthdate, email, phone) = ($2, $3, $4, $5, $6)

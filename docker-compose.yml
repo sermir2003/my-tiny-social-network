@@ -27,7 +27,7 @@ services:
   users_db:
     container_name: ${USERS_DB_HOST}
     image: postgres:16
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${USERS_DB_DB}
       POSTGRES_USER: ${USERS_DB_USER}
@@ -63,7 +63,7 @@ services:
   ugc_db:
     container_name: ${UGC_DB_HOST}
     image: postgres:16
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${UGC_DB_DB}
       POSTGRES_USER: ${UGC_DB_USER}

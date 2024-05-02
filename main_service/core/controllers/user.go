@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"log"
-	db_utils "main_service_core/db_utils"
-	jwt_utils "main_service_core/jwt_utils"
+	"main_service_core/db_utils"
+	"main_service_core/jwt_utils"
 	"main_service_core/models"
 
 	"github.com/gin-gonic/gin"

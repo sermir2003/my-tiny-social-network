@@ -2,7 +2,7 @@ package middlewares
 
 import (
 	"log"
-	jwt_utils "main_service_core/jwt_utils"
+	"main_service_core/jwt_utils"
 
 	"github.com/gin-gonic/gin"
 )

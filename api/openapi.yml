@@ -96,22 +96,31 @@ paths:
       responses:
         '200':
           description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  post_id:
+                    type: integer
+                    format: uint64
+                    example: 1
         '400':
           description: Post content is missing
         '401':
           $ref: '#/components/responses/TokenUnauthorizedError'
   
-  /post/{id}:
+  /post/{post_id}:
     put:
       summary: Update post
-      description: Update content of post with provided id with provided new contest
+      description: Update content of post with provided post_id with provided new contest
       operationId: UpdatePost
       tags:
         - post
       security:
         - TokenAuth: []
       parameters:
-        - name: id
+        - name: post_id
           in: path
           description: Post id
           required: true
@@ -129,7 +138,7 @@ paths:
               properties:
                 content:
                   type: string
-                  example: It's a new day in America.
+                  example: It's okay, it's okay. I like this kimono. Let the younger ones eat more than that.
               required:
                 - content
       responses:
@@ -145,14 +154,14 @@ paths:
           $ref: '#/components/responses/PostNotFoundError'
     delete:
       summary: Delete post
-      description: Delete post with provided id
+      description: Delete post with provided post_id
       operationId: DeletePost
       tags:
         - post
       security:
         - TokenAuth: []
       parameters:
-        - name: id
+        - name: post_id
           in: path
           description: Post id
           required: true
@@ -173,14 +182,14 @@ paths:
           $ref: '#/components/responses/PostNotFoundError'
     get:
       summary: Get post by id
-      description: Get post with provided id
+      description: Get post with provided post_id
       operationId: GetPostById
       tags:
         - post
       security:
         - TokenAuth: []
       parameters:
-        - name: id
+        - name: post_id
           in: path
           description: Post id
           required: true
@@ -191,6 +200,10 @@ paths:
       responses:
         '200':
           description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
         '400':
           description: Post parameter is missing
         '401':
@@ -231,6 +244,16 @@ paths:
       responses:
         '200':
           description: Success
+          content:
+            application/json:
+              schema:
+                description: Posts from the requested pagination
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
         '400':
           description: Pagination parameters are missing
         '401':
@@ -283,26 +306,23 @@ components:
           example: "+2556517263803249791110286440017"
       minProperties: 1
     
-    # Post:
-    #   description: All post data
-    #   type: object
-    #   properties:
-    #     post_id:
-    #       type: integer
-    #       format: uint32
-    #       example: 1
-    #     author_id:
-    #       type: integer
-    #       format: uint32
-    #       example: 1
-    #     content:
-    #       type: string
-    #       example: Is it pitiful if you can't wear a beautiful kimono?
-    #     create_timestamp:
-    #       type: string
-    #       format: date-time
-    #       example: 2024-04-12T14:17:43.308137+03
-    #     update_timestamp:
+    Post:
+      type: object
+      properties:
+        post_id:
+          type: integer
+          format: uint64
+        author_id:
+          type: integer
+          format: uint64
+        content:
+          type: string
+        create_timestamp:
+          type: string
+          format: date-time
+        update_timestamp:
+          type: string
+          format: date-time
 
 
   responses:

@@ -7,16 +7,16 @@ import (
 	"strconv"
 	"time"
 
-	jwt "github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt"
 )
 
 var JWT_SECRET []byte = []byte(utils.GetenvSafe("JWT_SECRET"))
 
-func CreateJWT(id uint32) (string, error) {
+func CreateJWT(id uint64) (string, error) {
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS256,
 		jwt.MapClaims{
-			"id":       strconv.FormatUint(uint64(id), 10),
+			"id":       strconv.FormatUint(id, 10),
 			"exp_time": time.Now().Add(15 * time.Minute).Format(time.RFC3339),
 		},
 	)
