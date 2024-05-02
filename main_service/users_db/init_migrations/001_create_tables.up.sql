@@ -1,7 +1,7 @@
 SET TIMEZONE="Europe/Moscow";
 
 CREATE TABLE users (
-    id SERIAL NOT NULL,
+    id BIGSERIAL NOT NULL,
     login VARCHAR(255) NOT NULL,
     salt BYTEA NOT NULL,
     password TEXT NOT NULL,
