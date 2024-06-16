@@ -8,7 +8,9 @@ info:
     email: sermir2003@gmail.com
 servers:
   - url: http://localhost:8080/api/v1
-    description: Dev server
+    description: Social network (main service)
+  - url: http://localhost:8083
+    description: stats service
 paths:
   /user/sign-up:
     post:
@@ -213,34 +215,40 @@ paths:
         '404':
           $ref: '#/components/responses/PostNotFoundError'
   
-  /post/pagination:
-    post:
+  /pagination/{author_id}/{offset}/{limit}:
+    get:
       summary: Get pagination
-      description: Lets look at the sequence of posts of the user who sent the request. Lets sort it by creation timestamp. This method outputs a `limit` of posts from this sequence starting with `offset`. If there are fewer posts than the `limit`, it gives out how many there are.
+      description: Let's look at the sequence of posts by the user with the `author_id` specified. Let's sort them by creation timestamp. This method will output a `limit` number of posts from that sequence, starting with an `offset`. If there are less than `limit` posts, it will output how many there are.
       operationId: GetPagination
       tags:
         - post
       security:
         - TokenAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              description: Pagination information
-              type: object
-              properties:
-                offset:
-                  type: integer
-                  format: uint64
-                  example: 0
-                limit:
-                  type: integer
-                  format: uint64
-                  example: 10
-              required:
-                - offset
-                - limit
+      parameters:
+        - name: author_id
+          in: path
+          description: The id of author of posts whose pagination is requested
+          required: true
+          schema:
+            type: integer
+            format: uint64
+            example: 1
+        - name: offset
+          in: path
+          description: Offset of pagination
+          required: true
+          schema:
+            type: integer
+            format: uint64
+            example: 1
+        - name: limit
+          in: path
+          description: Limit of pagination
+          required: true
+          schema:
+            type: integer
+            format: uint32
+            example: 1
       responses:
         '200':
           description: Success
@@ -258,6 +266,70 @@ paths:
           description: Pagination parameters are missing
         '401':
           $ref: '#/components/responses/TokenUnauthorizedError'
+  
+  /post/view/{post_id}:
+    post:
+      summary: Report on post view
+      description: Reports that the `post_id` was viewed by this user.
+      operationId: PostView
+      tags:
+        - reaction
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: post_id
+          in: path
+          description: The id of viewed post
+          required: true
+          schema:
+            type: integer
+            format: uint64
+            example: 1
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Post id is missing
+        '401':
+          $ref: '#/components/responses/TokenUnauthorizedError'
+  
+  /post/like/{post_id}:
+    post:
+      summary: Report on post view
+      description: Reports that the `post_id` was viewed by this user.
+      operationId: PostLike
+      tags:
+        - reaction
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: post_id
+          in: path
+          description: The id of viewed post
+          required: true
+          schema:
+            type: integer
+            format: uint64
+            example: 1
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Post id is missing
+        '401':
+          $ref: '#/components/responses/TokenUnauthorizedError'
+
+  /health:
+    get:
+      summary: Health check
+      description: http handle that always returns 200 OK
+      operationId: HealthCheck
+      tags:
+        - health
+      responses:
+        '200':
+          description: The service is not crashed
+
 
 
 components:
@@ -363,3 +435,5 @@ tags:
   - name: auth
   - name: personal
   - name: post
+  - name: reaction
+  - name: health

@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	post_pb "main_service_core/proto/post"
+	post_pb "main_service_core/post"
 )
 
 func CreatePost(c *gin.Context) {
@@ -119,11 +119,6 @@ func DeletePost(c *gin.Context) {
 }
 
 func GetPostById(c *gin.Context) {
-	author_id := getUserId(c)
-	if author_id == 0 {
-		return
-	}
-
 	var post_id models.PostId
 	if err := c.ShouldBindUri(&post_id); err != nil {
 		c.JSON(400, gin.H{"error": "Post id is missing"})
@@ -132,8 +127,7 @@ func GetPostById(c *gin.Context) {
 
 	ctx := context.TODO()
 	req := post_pb.GetByIdRequest{
-		AuthorId: author_id,
-		PostId:   post_id.PostId,
+		PostId: post_id.PostId,
 	}
 
 	resp, err := post_pb.Client.GetById(ctx, &req)
@@ -156,21 +150,15 @@ func GetPostById(c *gin.Context) {
 }
 
 func GetPostPagination(c *gin.Context) {
-	author_id := getUserId(c)
-	if author_id == 0 {
-		return
-	}
-
 	var pagination models.Pagination
-	if err := c.BindJSON(&pagination); err != nil {
-		log.Println(err)
-		c.JSON(400, gin.H{"error": "Pagination parameters are missing"})
+	if err := c.ShouldBindUri(&pagination); err != nil {
+		c.JSON(400, gin.H{"error": "Pagination parameters are missing or incorrect"})
 		return
 	}
 
 	ctx := context.TODO()
 	req := post_pb.GetPaginationRequest{
-		AuthorId: author_id,
+		AuthorId: *pagination.AuthorId,
 		Offset:   *pagination.Offset,
 		Limit:    *pagination.Limit,
 	}

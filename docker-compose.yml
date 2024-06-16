@@ -1,16 +1,12 @@
 networks:
-  main-inner-network:
-    driver: bridge
-  common-network:
-    driver: bridge
-  ugc-inner-network:
+  commin-network:
     driver: bridge
 
 
 services:
   common_pgadmin:
     container_name: common_pgadmin
-    image: dpage/pgadmin4
+    image: dpage/pgadmin4:8
     restart: unless-stopped
     depends_on:
       - users_db
@@ -21,8 +17,7 @@ services:
     ports:
       - ${PGADMIN_PORT}:80
     networks:
-      - main-inner-network
-      - ugc-inner-network
+      - commin-network
 
   users_db:
     container_name: ${USERS_DB_HOST}
@@ -36,7 +31,7 @@ services:
       - ./main_service/users_db/data/:/var/lib/postgresql/data
       - ./main_service/users_db/init_migrations:/docker-entrypoint-initdb.d
     networks:
-      - main-inner-network
+      - commin-network
   
   main_core:
     container_name: main_core
@@ -54,11 +49,12 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       MAIN_SERVICE_PORT: ${MAIN_SERVICE_PORT}
       UGC_SERVICE_PORT: ${UGC_SERVICE_PORT}
+      KAFKA_HOST: ${KAFKA_HOST}
+      KAFKA_PORT: ${KAFKA_PORT}
     ports:
       - ${SOCIAL_NETWORK_PORT}:${MAIN_SERVICE_PORT}
     networks:
-      - main-inner-network
-      - common-network
+      - commin-network
 
   ugc_db:
     container_name: ${UGC_DB_HOST}
@@ -72,7 +68,7 @@ services:
       - ./ugc_service/ugc_db/data/:/var/lib/postgresql/data
       - ./ugc_service/ugc_db/init_migrations:/docker-entrypoint-initdb.d
     networks:
-      - ugc-inner-network
+      - commin-network
   
   ugc_core:
     container_name: ugc_core
@@ -89,5 +85,71 @@ services:
       UGC_SERVICE_PORT: ${UGC_SERVICE_PORT}
       TIME_ZONE: ${UGC_TIME_ZONE}
     networks:
-      - ugc-inner-network
-      - common-network
+      - commin-network
+
+  stats_db:
+    container_name: stats_db
+    image: clickhouse/clickhouse-server:24
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_DB: ${STATS_DB_DB}
+      CLICKHOUSE_USER: ${STATS_DB_USER}
+      CLICKHOUSE_PASSWORD: ${STATS_DB_PASSWORD}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    volumes:
+      - ./stats_service/stats_db/data/:/var/lib/clickhouse
+      - ./stats_service/stats_db/init_migrations:/docker-entrypoint-initdb.d
+    ports:
+      - ${STATS_DB_HTTP_PORT}:8123
+    networks:
+      - commin-network
+
+  tabix:
+    container_name: tabix
+    image: spoonest/clickhouse-tabix-web-client:stable
+    restart: unless-stopped
+    depends_on:
+      - stats_db
+    ports:
+      - ${TABIX_PORT}:80
+    networks:
+      - commin-network
+  
+  zookeeper:
+    container_name: zookeeper
+    image: confluentinc/cp-zookeeper:7.6.1
+    environment:
+      ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_CLIENT_PORT}
+    networks:
+      - commin-network
+
+  kafka:
+    container_name: kafka
+    image: confluentinc/cp-kafka:7.6.1
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:${ZOOKEEPER_CLIENT_PORT}
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://${KAFKA_HOST}:${KAFKA_PORT}
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - commin-network
+
+  stats_core:
+    container_name: stats_core
+    build: ./stats_service/core
+    restart: unless-stopped
+    depends_on:
+      - stats_db
+    environment:
+      STATS_DB_HOST: ${STATS_DB_HOST}
+      STATS_DB_PORT: ${STATS_DB_PORT}
+      STATS_DB_USER: ${STATS_DB_USER}
+      STATS_DB_PASSWORD: ${STATS_DB_PASSWORD}
+      KAFKA_HOST: ${KAFKA_HOST}
+      KAFKA_PORT: ${KAFKA_PORT}
+      STATS_SERVICE_HTTP_PORT: ${STATS_SERVICE_HTTP_PORT}
+    ports:
+      - ${STATS_SERVICE_HTTP_PORT}:${STATS_SERVICE_HTTP_PORT}
+    networks:
+      - commin-network

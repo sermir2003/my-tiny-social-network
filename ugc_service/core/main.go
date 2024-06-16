@@ -7,7 +7,7 @@ import (
 	"net"
 
 	"ugc_service_core/db_utils"
-	post_pb "ugc_service_core/proto/post"
+	post_pb "ugc_service_core/post"
 	"ugc_service_core/utils"
 
 	"google.golang.org/grpc"

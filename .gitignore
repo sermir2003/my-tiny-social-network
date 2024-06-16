@@ -1,6 +1,3 @@
 main_service/users_db/data/
 ugc_service/ugc_db/data/
-ugc_service/core/proto/post/*.proto
-ugc_service/core/proto/post/*.pb.go
-main_service/core/proto/post/*.proto
-main_service/core/proto/post/*.pb.go
+stats_service/stats_db/data/

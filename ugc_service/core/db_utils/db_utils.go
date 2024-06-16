@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
-	post_pb "ugc_service_core/proto/post"
+	post_pb "ugc_service_core/post"
 	"ugc_service_core/utils"
 
 	_ "github.com/lib/pq"
@@ -179,35 +179,20 @@ func scanPost(row interface {
 }
 
 func GetById(req *post_pb.GetByIdRequest) (*post_pb.GetByIdResponse, error) {
-	access, tx, err := beginTxAndCheckAccess(req.PostId, req.AuthorId)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to start tx or check access: %v", err)
-	}
-	if access == ACCESS_DENIED {
-		return &post_pb.GetByIdResponse{
-			Access: post_pb.AccessResult_ACCESS_DENIED,
-		}, nil
-	}
-	if access == NOT_FOUND {
-		return &post_pb.GetByIdResponse{
-			Access: post_pb.AccessResult_NOT_FOUND,
-		}, nil
-	}
-
-	row := tx.QueryRow(`
+	row := db.QueryRow(`
 		SELECT post_id, author_id, content, create_timestamp, update_timestamp
 		FROM posts
 		WHERE post_id = $1`,
 		req.PostId,
 	)
 	post, err := scanPost(row)
+	if err == sql.ErrNoRows {
+		return &post_pb.GetByIdResponse{
+			Access: post_pb.AccessResult_NOT_FOUND,
+		}, nil
+	}
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to select: %v", err)
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to commit transaction: %v", err)
 	}
 
 	return &post_pb.GetByIdResponse{

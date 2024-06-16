@@ -15,8 +15,9 @@ type PostFull struct {
 }
 
 type Pagination struct {
-	Offset *uint64 `json:"offset" binding:"required"`
-	Limit  *uint32 `json:"limit" binding:"required"`
+	AuthorId *uint64 `uri:"author_id" binding:"required"`
+	Offset   *uint64 `uri:"offset" binding:"required"`
+	Limit    *uint32 `uri:"limit" binding:"required"`
 }
 
 type PostId struct {
