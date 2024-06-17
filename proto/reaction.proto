@@ -6,10 +6,12 @@ option go_package = "/reaction";
 
 message View {
     uint64 post_id = 1;
-    uint64 appraiser_id = 2;
+    uint64 author_id = 2;
+    uint64 appraiser_id = 3;
 }
 
 message Like {
     uint64 post_id = 1;
-    uint64 appraiser_id = 2;
+    uint64 author_id = 2;
+    uint64 appraiser_id = 3;
 }

@@ -36,9 +36,10 @@ func Connect() error {
 	return nil
 }
 
-func ReportView(post_id uint64, appraiser_id uint64) error {
+func ReportView(post_id uint64, author_id uint64, appraiser_id uint64) error {
 	view := &View{
 		PostId:      post_id,
+		AuthorId:    author_id,
 		AppraiserId: appraiser_id,
 	}
 
@@ -57,9 +58,10 @@ func ReportView(post_id uint64, appraiser_id uint64) error {
 	return nil
 }
 
-func ReportLike(post_id uint64, appraiser_id uint64) error {
+func ReportLike(post_id uint64, author_id uint64, appraiser_id uint64) error {
 	like := &Like{
 		PostId:      post_id,
+		AuthorId:    author_id,
 		AppraiserId: appraiser_id,
 	}
 

@@ -55,7 +55,7 @@ func pumpViews() {
 			log.Fatalf("failed to unmarshal: %v", err)
 		}
 
-		err = db_utils.AddView(view.PostId, view.AppraiserId)
+		err = db_utils.AddView(view.PostId, view.AuthorId, view.AppraiserId)
 		if err != nil {
 			log.Fatalf("failed to add view: %v", err)
 		}
@@ -75,7 +75,7 @@ func pumpLikes() {
 			log.Fatalf("failed to unmarshal: %v", err)
 		}
 
-		err = db_utils.AddLike(like.PostId, like.AppraiserId)
+		err = db_utils.AddLike(like.PostId, like.AuthorId, like.AppraiserId)
 		if err != nil {
 			log.Fatalf("failed to add like: %v", err)
 		}

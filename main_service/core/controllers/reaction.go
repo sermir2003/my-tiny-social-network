@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"context"
 	"log"
 
 	"main_service_core/models"
+	post_pb "main_service_core/post"
 	"main_service_core/reaction"
 
 	"github.com/gin-gonic/gin"
@@ -21,7 +23,15 @@ func PostView(c *gin.Context) {
 		return
 	}
 
-	err := reaction.ReportView(post_id.PostId, user_id)
+	post_grpc_resp, err := post_pb.Client.GetById(context.TODO(), &post_pb.GetByIdRequest{
+		PostId: post_id.PostId,
+	})
+	if err != nil {
+		log.Println(err.Error())
+		c.JSON(500, gin.H{"error": "Internal error"})
+	}
+
+	err = reaction.ReportView(post_id.PostId, post_grpc_resp.Post.AuthorId, user_id)
 	if err != nil {
 		log.Println(err.Error())
 		c.JSON(500, gin.H{"error": "Internal error"})
@@ -42,7 +52,15 @@ func PostLike(c *gin.Context) {
 		return
 	}
 
-	err := reaction.ReportLike(post_id.PostId, user_id)
+	post_grpc_resp, err := post_pb.Client.GetById(context.TODO(), &post_pb.GetByIdRequest{
+		PostId: post_id.PostId,
+	})
+	if err != nil {
+		log.Println(err.Error())
+		c.JSON(500, gin.H{"error": "Internal error"})
+	}
+
+	err = reaction.ReportLike(post_id.PostId, post_grpc_resp.Post.AuthorId, user_id)
 	if err != nil {
 		log.Println(err.Error())
 		c.JSON(500, gin.H{"error": "Internal error"})

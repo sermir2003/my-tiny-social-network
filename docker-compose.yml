@@ -1,3 +1,5 @@
+version: '3'
+
 networks:
   commin-network:
     driver: bridge
@@ -40,6 +42,8 @@ services:
     depends_on:
       - users_db
       - ugc_core
+      - stats_core
+      # - kafka
     environment:
       POSTGRES_HOST: ${USERS_DB_HOST}
       POSTGRES_PORT: ${USERS_DB_PORT}
@@ -51,6 +55,7 @@ services:
       UGC_SERVICE_PORT: ${UGC_SERVICE_PORT}
       KAFKA_HOST: ${KAFKA_HOST}
       KAFKA_PORT: ${KAFKA_PORT}
+      STATS_SERVICE_GRPC_PORT: ${STATS_SERVICE_GRPC_PORT}
     ports:
       - ${SOCIAL_NETWORK_PORT}:${MAIN_SERVICE_PORT}
     networks:
@@ -141,6 +146,7 @@ services:
     restart: unless-stopped
     depends_on:
       - stats_db
+      # - kafka
     environment:
       STATS_DB_HOST: ${STATS_DB_HOST}
       STATS_DB_PORT: ${STATS_DB_PORT}
@@ -149,6 +155,7 @@ services:
       KAFKA_HOST: ${KAFKA_HOST}
       KAFKA_PORT: ${KAFKA_PORT}
       STATS_SERVICE_HTTP_PORT: ${STATS_SERVICE_HTTP_PORT}
+      STATS_SERVICE_GRPC_PORT: ${STATS_SERVICE_GRPC_PORT}
     ports:
       - ${STATS_SERVICE_HTTP_PORT}:${STATS_SERVICE_HTTP_PORT}
     networks:

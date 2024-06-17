@@ -330,6 +330,92 @@ paths:
         '200':
           description: The service is not crashed
 
+  /post/stats/{post_id}:
+    get:
+      summary: Returns stats of `post_id`
+      description: Returns the number of views and comments of the post with given `post_id`.
+      operationId: PostStats
+      tags:
+        - stats
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: post_id
+          in: path
+          description: The id of requested post
+          required: true
+          schema:
+            type: integer
+            format: uint64
+            example: 1
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Post id is missing
+        '401':
+          $ref: '#/components/responses/TokenUnauthorizedError'
+
+  /posts-top/{top_type}/{count}:
+    get:
+      summary: Returns top viewed or liked posts
+      description: The `top_type` must be set to "view" or "like". In the case of "view", it returns the top-`count` of posts by views; in the case of "like", it returns the top-`count` of posts by likes.
+      operationId: PostsTop
+      tags:
+          - stats
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: top_type
+          in: path
+          description: The number of items in the top
+          required: true
+          schema:
+            type: string
+            format: '^(view|like)$'
+            example: view
+        - name: count
+          in: path
+          description: The number of items in the top
+          required: true
+          schema:
+            type: integer
+            format: uint64
+            example: 1
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: The top type or the count is missing
+        '401':
+          $ref: '#/components/responses/TokenUnauthorizedError'
+
+  /users-top/{count}:
+    get:
+      summary: Returns top users by likes
+      description: Returns the top-`count` of users by the total number of likes.
+      operationId: UsersTop
+      tags:
+          - stats
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: count
+          in: path
+          description: The number of items in the top
+          required: true
+          schema:
+            type: integer
+            format: uint64
+            example: 1
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: The count is missing
+        '401':
+          $ref: '#/components/responses/TokenUnauthorizedError'
+
 
 
 components:
@@ -436,4 +522,5 @@ tags:
   - name: personal
   - name: post
   - name: reaction
+  - name: stats
   - name: health

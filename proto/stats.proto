@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package stats;
+
+option go_package = "/stats";
+
+service StatsService {
+    rpc GetPostStats(GetPostStatsRequest) returns (GetPostStatsResponse);
+    rpc GetTopPosts(GetTopPostsRequest) returns (GetTopPostsResponse);
+    rpc GetTopUsers(GetTopUsersRequest) returns (GetTopUsersResponse);
+}
+
+message GetPostStatsRequest {
+    uint64 post_id = 1;
+}
+
+message GetPostStatsResponse {
+    uint64 cnt_views = 1;
+    uint64 cnt_likes = 2;
+}
+
+enum ReactionType {
+    VIEW = 0;
+    LIKE = 1;
+}
+
+message GetTopPostsRequest {
+    ReactionType type = 1;
+    uint64 top_size = 2;
+}
+
+message TopPostItem {
+    uint64 post_id = 1;
+    uint64 author_id = 2;
+    uint64 stats_number = 3;
+}
+
+message GetTopPostsResponse {
+    repeated TopPostItem top = 1;
+}
+
+message GetTopUsersRequest {
+    uint64 top_size = 1;
+}
+
+message TopUserItem {
+    uint64 user_id = 1;
+    uint64 sum_likes = 2;
+}
+
+message GetTopUsersResponse {
+    repeated TopUserItem top = 1;
+}

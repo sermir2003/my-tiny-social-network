@@ -5,6 +5,7 @@ import (
 	"stats_service_core/db_utils"
 	"stats_service_core/http_server"
 	"stats_service_core/kafka_pumper"
+	"stats_service_core/stats_server"
 )
 
 func main() {
@@ -15,5 +16,6 @@ func main() {
 	}
 
 	kafka_pumper.StartPumping()
-	http_server.RunServer()
+	go http_server.RunServer()
+	stats_server.RunServer()
 }
