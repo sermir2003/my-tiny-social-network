@@ -125,3 +125,16 @@ func UpdatePersonal(id uint64, personal models.PersonalData) error {
 	)
 	return err
 }
+
+func GetLoginById(id uint64) (login string, err error) {
+	err = DB.QueryRow(`
+		SELECT login
+		FROM users
+		WHERE id = $1`,
+		id,
+	).Scan(&login)
+	if err != nil {
+		return "", err
+	}
+	return login, nil
+}

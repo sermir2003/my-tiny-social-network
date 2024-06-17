@@ -49,8 +49,7 @@ message DeleteResponse {
 }
 
 message GetByIdRequest {
-    uint64 author_id = 1;
-    uint64 post_id = 2;
+    uint64 post_id = 1;
 }
 
 message Post {
